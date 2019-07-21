@@ -18,9 +18,11 @@ class Movie extends Component {
     }
 
     componentDidMount() {
+        const { movieId } = this.props.match.params;
+        
         this.setState({ loading: true })
         //first fetch movie...
-        const endpoint = `${API_URL}movie/${this.props.match.params.movieId}?api_key=${API_KEY}&language=en-US`;
+        const endpoint = `${API_URL}movie/${movieId}?api_key=${API_KEY}&language=en-US`;
         this.fetchItems(endpoint);
     }
 
