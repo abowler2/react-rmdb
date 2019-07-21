@@ -24,38 +24,30 @@ class Home extends Component {
             this.setState({ ...state });
         } else {
             this.setState({ loading: true });
-            const endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=1`;
-            this.fetchItems(endpoint);
+            this.fetchItems(this.createEndpoint("movie/popular", false, ""));
         }   
     }
 
-    searchItems = (searchTerm) => {
-        let endpoint = '';
-        this.setState({
-            movies: [],
-            loading: true,
-            searchTerm
-        })
+    createEndpoint = (type, loadMore, searchTerm) => {
+        return `${API_URL}${type}?api_key=${API_KEY}&language=en-US&page=${loadMore
+            && this.state.currentPage + 1}&query=${searchTerm}`;
 
-        if (searchTerm === '') {
-            endpoint = `${API_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=${this.state.currentPage + 1}`;
-        } else {
-            endpoint = `${API_URL}search/movie?api_key=${API_KEY}&language=en-US&query=${searchTerm}`;
-        }
-
-        this.fetchItems(endpoint);
     }
 
-    loadMoreItems = () => {
-        let endpoint = '';
-        this.setState({ loading: true });
-
-        if (this.state.searchTerm === '') {
-            endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=${this.state.currentPage + 1}`;
-        } else {
-            endpoint = `${API_URL}search/movie?api_key=${API_KEY}&language=en-US&query=${this.state.searchTerm}&page=${this.state.currentPage + 1}`;
-        }
-        this.fetchItems(endpoint);
+    updateItems = (loadMore, searchTerm) => {
+        this.setState(
+            {
+                movies: loadMore ? [...this.state.movies] : [],
+                loading: true,
+                searchTerm: loadMore ? this.state.searchTerm : searchTerm
+            }, () => {
+                this.fetchItems (
+                    !this.state.searchTerm ?
+                    this.createEndpoint("movie/popular", loadMore, "") :
+                    this.createEndpoint("search/movie", loadMore, this.state.searchTerm)
+                )
+            }
+        )
     }
 
     fetchItems = async endpoint => {
@@ -85,15 +77,15 @@ class Home extends Component {
         
         return (
             <div className='rmdb-home'>
-            {heroImage ?
+            {heroImage && !searchTerm ?
                 <div>  
                     <HeroImage 
                         image={`${IMAGE_BASE_URL}${BACKDROP_SIZE}${heroImage.backdrop_path}`}
                         title={heroImage.original_title}
                         text={heroImage.overview}
                     />
-                    <SearchBar callback={this.searchItems} />
                 </div> : null }
+                <SearchBar callback={this.updateItems} />
                 <div className='rmdb-home-grid'>
                     <FourColGrid 
                         header={searchTerm ? 'Search Results' : 'Popular Movies'}
@@ -110,8 +102,8 @@ class Home extends Component {
                         })}
                     </FourColGrid>
                     {loading ? <Spinner /> : null}
-                    {(currentPage <= totalPages && !loading) ?
-                        <LoadMoreBtn text="Load More" onClick={this.loadMoreItems} /> 
+                    {(currentPage < totalPages && !loading) ?
+                        <LoadMoreBtn text="Load More" onClick={this.updateItems} /> 
                         : null }
                 </div>
             </div>
