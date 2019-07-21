@@ -78,23 +78,26 @@ class Home extends Component {
     }
 
     render() {
+        //ES6 destructuring the state
+        const { movies, heroImage, loading, currentPage, totalPages, searchTerm } = this.state;
+        
         return (
             <div className='rmdb-home'>
-            {this.state.heroImage ?
+            {heroImage ?
                 <div>  
                     <HeroImage 
-                        image={`${IMAGE_BASE_URL}${BACKDROP_SIZE}${this.state.heroImage.backdrop_path}`}
-                        title={this.state.heroImage.original_title}
-                        text={this.state.heroImage.overview}
+                        image={`${IMAGE_BASE_URL}${BACKDROP_SIZE}${heroImage.backdrop_path}`}
+                        title={heroImage.original_title}
+                        text={heroImage.overview}
                     />
                     <SearchBar callback={this.searchItems} />
                 </div> : null }
                 <div className='rmdb-home-grid'>
                     <FourColGrid 
-                        header={this.state.searchTerm ? 'Search Results' : 'Popular Movies'}
-                        loading={this.state.loading}
+                        header={searchTerm ? 'Search Results' : 'Popular Movies'}
+                        loading={loading}
                         >
-                        {this.state.movies.map( (element, i) => {
+                        {movies.map( (element, i) => {
                             return <MovieThumb
                                 key={i}
                                 clickable={true}
@@ -104,8 +107,8 @@ class Home extends Component {
                             />
                         })}
                     </FourColGrid>
-                    {this.state.loading ? <Spinner /> : null}
-                    {(this.state.currentPage <= this.state.totalPages && !this.state.loading) ?
+                    {loading ? <Spinner /> : null}
+                    {(currentPage <= totalPages && !loading) ?
                         <LoadMoreBtn text="Load More" onClick={this.loadMoreItems} /> 
                         : null }
                 </div>
