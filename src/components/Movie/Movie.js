@@ -24,32 +24,27 @@ class Movie extends Component {
         this.fetchItems(endpoint);
     }
 
-    fetchItems = (endpoint) => {
-        fetch(endpoint)
-        .then(result => result.json())
-        .then(result => {
-            
+    fetchItems = async endpoint => {
+        const { movieId } = this.props.match.params;
+
+        try {
+            const result = await (await fetch(endpoint)).json();
             if (result.status_code) {
                 this.setState({ loading: false });
             } else {
-                this.setState({ movie: result }, () => {
-                    //...then fetch actors in the setState callback function
-                    const endpoint = `${API_URL}movie/${this.props.match.params.movieId}/credits?api_key=${API_KEY}`;
-                    fetch(endpoint)
-                    .then(result => result.json())
-                    .then(result => {
-                        const directors = result.crew.filter( (member) => member.job === 'Director');
-
-                        this.setState({ 
-                            actors: result.cast,
-                            directors,
-                            loading: false
-                         })
-                    })
-                })
+                this.setState({ movie: result })
+                const creditsEndpoint = `${API_URL}movie/${movieId}/credits?api_key=${API_KEY}`;
+                const creditsResult = await (await fetch(creditsEndpoint)).json();
+                const directors = creditsResult.crew.filter( (member) => member.job === 'Director');
+                    this.setState({ 
+                        actors: creditsResult.cast,
+                        directors,
+                        loading: false
+                        })
             }
-        })
-        .catch(error => console.error('Error', error))
+        } catch (e) {
+            console.log("There was an error: ", e);
+        }
     }
 
     render() {
